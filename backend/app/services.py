@@ -1,8 +1,11 @@
+import os
 import requests
 from .database import activity_collection
 from datetime import datetime
 
+# GitHub API configuration
 GITHUB_API = "https://api.github.com/users/{username}/events"
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 
 def get_user_activity(username: str):
     # Check cache
@@ -17,7 +20,11 @@ def get_user_activity(username: str):
 
     # Fetch from GitHub
     try:
-        response = requests.get(GITHUB_API.format(username=username))
+        headers = {}
+        if GITHUB_TOKEN:
+            headers["Authorization"] = f"token {GITHUB_TOKEN}"
+        
+        response = requests.get(GITHUB_API.format(username=username), headers=headers)
         
         if response.status_code == 404:
             return {"error": "User not found on GitHub"}
