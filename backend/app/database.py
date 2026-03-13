@@ -38,7 +38,7 @@ def get_mongo_uri():
 
 # Initialize configuration
 uri = get_mongo_uri()
-print("MongoDB URI:", uri)
+print(" URI:", uri)
 client = MongoClient(uri)
 db_name = os.getenv("MONGODB_NAME", "github_activity")
 db = client[db_name]
