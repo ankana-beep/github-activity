@@ -4,3 +4,4 @@ pymongo
 requests
 typer
 python-dotenv
+dnspython
