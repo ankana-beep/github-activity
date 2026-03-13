@@ -17,7 +17,10 @@ def get_mongo_uri():
     password = os.getenv("MONGODB_PASSWORD")
     cluster = os.getenv("MONGODB_CLUSTER")
     db_name = os.getenv("MONGODB_NAME", "github_activity")
-
+    print("user",user)
+    print("password",password)
+    print("cluster",cluster)
+    print("db_name",db_name)
     if user and password and cluster:
         # Use quote_plus to safely encode password characters
         return f"mongodb+srv://{quote_plus(user)}:{quote_plus(password)}@{cluster}/{db_name}?retryWrites=true&w=majority"
