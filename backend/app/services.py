@@ -43,6 +43,9 @@ def get_user_activity(username: str):
                     "created_at": event.get("created_at")
                 })
         
+        # json_data = json.dumps(activity)
+        # print("activity",json_data)
+
         # Save to cache
         activity_collection.update_one(
             {"username": username},
