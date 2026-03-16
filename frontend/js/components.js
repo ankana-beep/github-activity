@@ -168,6 +168,10 @@ const Components = {
     },
 
     renderHeatmap(activity) {
+
+        console.log("activity ankana beep baap", activity)
+
+
         const weeksToShow = 24; // Show more weeks for a better dashboard feel
         const now = new Date();
         const dayOfWeek = now.getDay(); // 0 is Sunday
@@ -177,11 +181,12 @@ const Components = {
         startDate.setDate(now.getDate() - (weeksToShow * 7) - dayOfWeek);
         startDate.setHours(0, 0, 0, 0);
 
-        // Count activity per day
+        // Count activity per day (Normalized to local date string)
         const activityCounts = {};
         activity.forEach(event => {
-            const date = event.created_at.split('T')[0];
-            activityCounts[date] = (activityCounts[date] || 0) + 1;
+            const date = new Date(event.created_at);
+            const dateStr = date.toLocaleDateString('en-CA'); // 'YYYY-MM-DD' in local time
+            activityCounts[dateStr] = (activityCounts[dateStr] || 0) + 1;
         });
 
         const dates = [];
@@ -190,7 +195,7 @@ const Components = {
         for (let i = 0; i < totalDays; i++) {
             const date = new Date(startDate);
             date.setDate(startDate.getDate() + i);
-            const dateStr = date.toISOString().split('T')[0];
+            const dateStr = date.toLocaleDateString('en-CA'); // MATCHING FORMAT
             const count = activityCounts[dateStr] || 0;
 
             let level = 0;
@@ -221,11 +226,22 @@ const Components = {
         `).join('');
 
         return `
-            <div class="heatmap-container-outer">
-                ${labels}
-                <div class="heatmap-grid">
-                    ${cells}
+            <div class="heatmap-wrapper">
+                <div class="heatmap-container-outer">
+                    ${labels}
+                    <div class="heatmap-grid" id="heatmapGrid">
+                        ${cells}
+                    </div>
                 </div>
+            </div>
+            <div class="heatmap-footer" style="display: flex; justify-content: flex-end; align-items: center; gap: 4px; font-size: 11px; margin-top: 12px; color: var(--text-secondary);">
+                <span>Less</span>
+                <div class="heatmap-cell level-0"></div>
+                <div class="heatmap-cell level-1"></div>
+                <div class="heatmap-cell level-2"></div>
+                <div class="heatmap-cell level-3"></div>
+                <div class="heatmap-cell level-4"></div>
+                <span>More</span>
             </div>
         `;
     }

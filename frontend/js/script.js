@@ -1,4 +1,4 @@
-const API_BASE = 'https://github-activity-1.onrender.com';
+const API_BASE = 'http://localhost:8001';
 const GITHUB_API_BASE = 'https://api.github.com';
 
 const Api = {

@@ -46,8 +46,8 @@ const App = {
             }
 
             this.currentActivity = activity;
-            this.renderDashboard(profile, activity);
             this.showState('main');
+            this.renderDashboard(profile, activity);
         } catch (error) {
             console.error('Search Error:', error);
             this.errorMessage.textContent = error.message;
