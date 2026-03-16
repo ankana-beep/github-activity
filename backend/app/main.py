@@ -1,5 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
+import os
+
+# Load environment variables
+load_dotenv()
+
 from .routes import router
 
 app = FastAPI(title="Git Activity API")
