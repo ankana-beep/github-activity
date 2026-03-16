@@ -23,7 +23,7 @@ def get_mongo_uri():
     print("db_name",db_name)
     if user and password and cluster:
         # Use quote_plus to safely encode password characters
-        return f"mongodb+srv://{user}:{password}{cluster}/{db_name}?retryWrites=true&w=majority"
+        return f"mongodb+srv://{quote_plus(user)}:{quote_plus(password)}@{cluster}/{db_name}?retryWrites=true&w=majority"
 
     # 2. Fallback to full URI (often used in Render)
     uri = os.getenv("MONGODB_URI")
