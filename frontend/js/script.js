@@ -42,5 +42,28 @@ const Api = {
         ]);
 
         return { activity, profile };
+    },
+
+    async login() {
+        try {
+            const response = await fetch(`${API_BASE}/auth/login`);
+            const { url } = await response.json();
+            window.location.href = url;
+        } catch (error) {
+            console.error('Login Error:', error);
+            alert('Failed to initiate login');
+        }
+    },
+
+    async handleCallback(code) {
+        try {
+            const response = await fetch(`${API_BASE}/auth/callback?code=${code}`);
+            const data = await response.json();
+            if (data.error) throw new Error(data.error);
+            return data;
+        } catch (error) {
+            console.error('Callback Error:', error);
+            throw error;
+        }
     }
 };

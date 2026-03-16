@@ -1,7 +1,9 @@
 const Components = {
     renderProfile(profile) {
+        if (!profile) return '';
+        const avatarUrl = profile.avatar_url || '';
         return `
-            <img src="${profile.avatar_url}" alt="${profile.login}" class="avatar">
+            <img src="${avatarUrl}" alt="${profile.login || 'User'}" class="avatar">
             <h2 class="profile-name">${profile.name || profile.login}</h2>
             <p class="profile-handle">@${profile.login}</p>
             ${profile.bio ? `<p class="profile-bio">${profile.bio}</p>` : ''}

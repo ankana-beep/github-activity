@@ -1,26 +1,65 @@
 const App = {
-    // UI Elements
-    usernameInput: document.getElementById('usernameInput'),
-    searchBtn: document.getElementById('searchBtn'),
-    searchLoader: document.getElementById('searchLoader'),
-    mainContent: document.getElementById('mainContent'),
-    initialState: document.getElementById('initialState'),
-    loadingState: document.getElementById('loadingState'),
-    errorState: document.getElementById('errorState'),
-    errorMessage: document.getElementById('errorMessage'),
+    // UI Elements (initialized in init)
+    usernameInput: null,
+    searchBtn: null,
+    searchLoader: null,
+    mainContent: null,
+    initialState: null,
+    loadingState: null,
+    errorState: null,
+    errorMessage: null,
 
-    // Containers
-    userProfile: document.getElementById('userProfile'),
-    statsGrid: document.getElementById('statsGrid'),
-    repoTableBody: document.getElementById('repoTableBody'),
-    timeline: document.getElementById('timeline'),
-    heatmapContainer: document.getElementById('heatmapContainer'),
+    // Auth Elements (initialized in init)
+    loginBtn: null,
+    logoutBtn: null,
+    userAccount: null,
+    userAvatar: null,
+    userName: null,
+
+    // Containers (initialized in init)
+    userProfile: null,
+    statsGrid: null,
+    repoTableBody: null,
+    timeline: null,
+    heatmapContainer: null,
 
     init() {
+        // UI Elements
+        this.usernameInput = document.getElementById('usernameInput');
+        this.searchBtn = document.getElementById('searchBtn');
+        this.searchLoader = document.getElementById('searchLoader');
+        this.mainContent = document.getElementById('mainContent');
+        this.initialState = document.getElementById('initialState');
+        this.loadingState = document.getElementById('loadingState');
+        this.errorState = document.getElementById('errorState');
+        this.errorMessage = document.getElementById('errorMessage');
+
+        // Auth Elements
+        this.loginBtn = document.getElementById('loginBtn');
+        this.logoutBtn = document.getElementById('logoutBtn');
+        this.userAccount = document.getElementById('userAccount');
+        this.userAvatar = document.getElementById('userAvatar');
+        this.userName = document.getElementById('userName');
+
+        // Containers
+        this.userProfile = document.getElementById('userProfile');
+        this.statsGrid = document.getElementById('statsGrid');
+        this.repoTableBody = document.getElementById('repoTableBody');
+        this.timeline = document.getElementById('timeline');
+        this.heatmapContainer = document.getElementById('heatmapContainer');
+
+        this.setupEventListeners();
+        this.checkAuth();
+    },
+
+    setupEventListeners() {
         this.searchBtn.addEventListener('click', () => this.handleSearch());
         this.usernameInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') this.handleSearch();
         });
+
+        this.loginBtn.addEventListener('click', () => Api.login());
+        this.logoutBtn.addEventListener('click', () => this.handleLogout());
 
         // Handle window resize for chart
         window.addEventListener('resize', () => {
@@ -30,9 +69,63 @@ const App = {
         });
     },
 
-    async handleSearch() {
-        const username = this.usernameInput.value.trim();
+    async checkAuth() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+
+        if (code) {
+            // Clear code from URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+            this.showState('loading');
+            try {
+                const data = await Api.handleCallback(code);
+                this.saveSession(data);
+                this.updateAuthUI(data.user);
+                this.handleSearch(data.user.login);
+            } catch (error) {
+                console.error('Auth failed:', error);
+                this.showState('error');
+                this.errorMessage.textContent = 'GitHub authentication failed.';
+            }
+            return;
+        }
+
+        const savedUser = localStorage.getItem('github_user');
+        if (savedUser) {
+            const user = JSON.parse(savedUser);
+            this.updateAuthUI(user);
+            this.handleSearch(user.login);
+        }
+    },
+
+    saveSession(data) {
+        localStorage.setItem('access_token', data.access_token);
+        localStorage.setItem('github_user', JSON.stringify(data.user));
+    },
+
+    handleLogout() {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('github_user');
+        window.location.reload();
+    },
+
+    updateAuthUI(user) {
+        if (!user) return;
+        this.loginBtn.classList.add('hidden');
+        this.userAccount.classList.remove('hidden');
+        this.userAvatar.src = user.avatar_url || '';
+        this.userName.textContent = user.name || user.login || 'User';
+        this.usernameInput.value = user.login || '';
+        this.usernameInput.disabled = false;
+        this.usernameInput.placeholder = "Enter GitHub username...";
+        this.searchBtn.disabled = false;
+    },
+
+    async handleSearch(preFilledUsername) {
+        const username = preFilledUsername || this.usernameInput.value.trim();
         if (!username) return;
+
+        if (preFilledUsername) this.usernameInput.value = preFilledUsername;
 
         this.showState('loading');
         this.currentActivity = null;
@@ -75,7 +168,9 @@ const App = {
             return;
         }
         // Render Profile
-        this.userProfile.innerHTML = Components.renderProfile(profile);
+        if (profile) {
+            this.userProfile.innerHTML = Components.renderProfile(profile);
+        }
 
         // Render Stats
         this.statsGrid.innerHTML = Components.renderStats(activity);
